@@ -61,36 +61,36 @@ const getUsers = async (req, res) => {
   }
 };
 
-// const deleteUser = async (req, res) => {
-//   try {
-//     if (req.query.id) {
-//       const result = await User.findByIdAndDelete(req.query.id);
-//       if (result) {
-//         return res.status(200).json({
-//           status: 200,
-//           message: "User deleted successfully",
-//           result,
-//         });
-//       } else {
-//         return res.status(404).json({
-//           status: 404,
-//           message: "User not found",
-//         });
-//       }
-//     } else {
-//       const result = await User.deleteMany({});
-//       return res.status(200).json({
-//         status: 200,
-//         message: `All users deleted, ${result.deletedCount} users were removed`,
-//       });
-//     }
-//   } catch (error) {
-//     return res.status(500).json({
-//       status: 500,
-//       error: "Internal Server Error",
-//     });
-//   }
-// };
+const deleteUser = async (req, res) => {
+  try {
+    if (req.query.id) {
+      const result = await User.findByIdAndDelete(req.query.id);
+      if (result) {
+        return res.status(200).json({
+          status: 200,
+          message: "User deleted successfully",
+          result,
+        });
+      } else {
+        return res.status(404).json({
+          status: 404,
+          message: "User not found",
+        });
+      }
+    } else {
+      const result = await User.deleteMany({});
+      return res.status(200).json({
+        status: 200,
+        message: `All users deleted, ${result.deletedCount} users were removed`,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      error: "Internal Server Error",
+    });
+  }
+};
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -101,7 +101,6 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter to allow only images
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif/;
   const mimeType = allowedTypes.test(file.mimetype);
@@ -177,4 +176,4 @@ const updateUser = async (req, res) => {
   }
 };
 
-export { getUsers, updateUser, upload  };
+export { getUsers, deleteUser, updateUser, upload  };
