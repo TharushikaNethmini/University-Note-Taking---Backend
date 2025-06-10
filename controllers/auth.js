@@ -43,45 +43,45 @@ const signup = async (req, res) => {
   }
 };
 
-// const signin = async (req, res) => {
-//   const user = await User.findOne({ email: req.body.email });
-//   if (!user)
-//     return res.status(200).json({
-//       status: 404,
-//       message: "Email is not found",
-//     });
+const signin = async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user)
+    return res.status(200).json({
+      status: 404,
+      message: "Email is not found",
+    });
 
-//   const validatedPassword = await bcrypt.compare(
-//     req.body.password,
-//     user.password
-//   );
-//   if (validatedPassword) {
-//     const token = jwt.sign(
-//       { _id: user._id, role: user.role },
-//       process.env.JWT_SECRET,
-//       {
-//         expiresIn: "365d",
-//       }
-//     );
-//     const { _id, username, firstName, lastName, email, role } = user;
-//     res.status(200).json({
-//       status: 200,
-//       payload: {
-//         token: token,
-//         _id,
-//         username,
-//         firstName,
-//         lastName,
-//         email,
-//         role,
-//       },
-//     });
-//   } else {
-//     return res.status(200).json({
-//       status: 404,
-//       message: "Password is wrong",
-//     });
-//   }
-// };
+  const validatedPassword = await bcrypt.compare(
+    req.body.password,
+    user.password
+  );
+  if (validatedPassword) {
+    const token = jwt.sign(
+      { _id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "365d",
+      }
+    );
+    const { _id, username, firstName, lastName, email, role } = user;
+    res.status(200).json({
+      status: 200,
+      payload: {
+        token: token,
+        _id,
+        username,
+        firstName,
+        lastName,
+        email,
+        role,
+      },
+    });
+  } else {
+    return res.status(200).json({
+      status: 404,
+      message: "Password is wrong",
+    });
+  }
+};
 
-export { signup };
+export { signup, signin };
