@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
-// import multer from "multer";
+import { log } from "console";
+import multer from "multer";
 import path from "path";
 
 const getUsers = async (req, res) => {
@@ -91,89 +92,91 @@ const getUsers = async (req, res) => {
 //   }
 // };
 
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "uploads/"); // Directory where files will be stored
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, `${Date.now()}_${file.originalname}`); // Filename format
-//   },
-// });
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Directory where files will be stored
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}_${file.originalname}`); // Filename format
+  },
+});
 
-// // File filter to allow only images
-// const fileFilter = (req, file, cb) => {
-//   const allowedTypes = /jpeg|jpg|png|gif/;
-//   const mimeType = allowedTypes.test(file.mimetype);
-//   const extName = allowedTypes.test(
-//     path.extname(file.originalname).toLowerCase()
-//   );
+// File filter to allow only images
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif/;
+  const mimeType = allowedTypes.test(file.mimetype);
+  const extName = allowedTypes.test(
+    path.extname(file.originalname).toLowerCase()
+  );
 
-//   if (mimeType && extName) {
-//     return cb(null, true);
-//   } else {
-//     cb(
-//       "Error: File upload only supports the following filetypes - " +
-//         allowedTypes
-//     );
-//   }
-// };
+  if (mimeType && extName) {
+    return cb(null, true);
+  } else {
+    cb(
+      "Error: File upload only supports the following filetypes - " +
+        allowedTypes
+    );
+  }
+};
 
-// const upload = multer({
-//   storage: storage,
-//   limits: { fileSize: 1024 * 1024 * 5 }, // 5MB file size limit
-//   fileFilter: fileFilter,
-// });
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 1024 * 1024 * 5 }, // 5MB file size limit
+  fileFilter: fileFilter,
+});
 
-// const updateUser = async (req, res) => {
-//   try {
-//     const userId = req.params.id;
-//     const updateData = req.body;
+const updateUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const updateData = Object.assign({}, req.body);
 
-//     // Check if the user exists
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(404).json({
-//         status: 404,
-//         message: "User not found",
-//       });
-//     }
+    // Check if the user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: 404,
+        message: "User not found",
+      });
+    }
 
-//     // Validate that the email belongs to the user with the given ID
-//     if (updateData.email && updateData.email !== user.email) {
-//       return res.status(400).json({
-//         status: 400,
-//         message: "Email does not match the user ID",
-//       });
-//     }
+    // Validate that the email belongs to the user with the given ID
+    if (updateData.email && updateData.email !== user.email) {
+      return res.status(400).json({
+        status: 400,
+        message: "Email does not match the user ID",
+      });
+    }
 
-//     // Check if the password is being updated
-//     if (updateData.password) {
-//       // Hash the new password
-//       const salt = await bcrypt.genSalt(10);
-//       const hashedPassword = await bcrypt.hash(updateData.password, salt);
-//       updateData.password = hashedPassword;
-//     }
+    // Check if the password is being updated
+    if (updateData.password) {
+      // Hash the new password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(updateData.password, salt);
+      updateData.password = hashedPassword;
+    }
 
-//     // Check if a profile picture is being uploaded
-//     if (req.file) {
-//       updateData.profilePic = `/uploads/${req.file.filename}`;
-//     }
+    // Check if a profile picture is being uploaded
+    if (req.file) {
+      updateData.profilePic = `/uploads/${req.file.filename}`;
+    }
 
-//     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
-//       new: true,
-//       runValidators: true,
-//     });
+    log("Update Data:", updateData);
 
-//     return res.status(200).json({
-//       status: 200,
-//       payload: updatedUser,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       status: 500,
-//       error: "Internal Server Error",
-//     });
-//   }
-// };
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
-export { getUsers };
+    return res.status(200).json({
+      status: 200,
+      payload: updatedUser,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      error: "Internal Server Error",
+    });
+  }
+};
+
+export { getUsers, updateUser, upload  };
