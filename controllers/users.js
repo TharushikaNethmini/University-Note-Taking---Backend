@@ -160,8 +160,6 @@ const updateUser = async (req, res) => {
       updateData.profilePic = `/uploads/${req.file.filename}`;
     }
 
-    log("Update Data:", updateData);
-
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
       runValidators: true,
