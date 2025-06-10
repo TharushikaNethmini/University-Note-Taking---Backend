@@ -5,6 +5,7 @@ import cors from "cors";
 
 import authRouter from "./routes/auth.js";
 import usersRouter from "./routes/users.js";
+import notesRouter from "./routes/notes.js";
 
 dotenv.config();
 connectDB();
@@ -19,6 +20,7 @@ app.use("/uploads", express.static("uploads"));
 
 app.use("/api", authRouter);
 app.use("/api", usersRouter);
+app.use("/api", notesRouter);
 
 app.get('/', (req, res) => {
     res.send('Hello from Express with sdsdsssss!');
