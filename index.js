@@ -4,6 +4,7 @@ import connectDB from './db.js';
 import cors from "cors";
 
 import authRouter from "./routes/auth.js";
+import usersRouter from "./routes/users.js";
 
 dotenv.config();
 connectDB();
@@ -16,6 +17,7 @@ app.use(cors());
 
 
 app.use("/api", authRouter);
+app.use("/api", usersRouter);
 
 app.get('/', (req, res) => {
     res.send('Hello from Express with sdsdsssss!');

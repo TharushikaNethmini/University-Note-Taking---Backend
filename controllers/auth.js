@@ -24,6 +24,7 @@ const signup = async (req, res) => {
     email: req.body.email,
     firstName: req.body.firstName,
     lastName: req.body.lastName,
+    university: req.body.university,
     password: hash_password,
     role: req.body.role,
   });
