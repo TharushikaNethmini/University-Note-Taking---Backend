@@ -111,4 +111,71 @@ const deleteCategory = async (req, res) => {
   }
 };
 
-export { addCategory, getCategories, deleteCategory };
+const updateCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { categoryCode, name } = req.body;
+
+    if (categoryCode) {
+      const existingCategoryCode = await Category.findOne({
+        categoryCode,
+        _id: { $ne: id },
+      });
+
+      if (existingCategoryCode) {
+        return res.status(400).json({
+          status: 400,
+          message: "Category code already exists",
+        });
+      }
+    }
+
+    if (name) {
+      const existingCategoryName = await Category.findOne({
+        name,
+        _id: { $ne: id },
+      });
+
+      if (existingCategoryName) {
+        return res.status(400).json({
+          status: 400,
+          message: "Category name already exists",
+        });
+      }
+    }
+
+    const updatedFields = {
+      ...req.body,
+    };
+
+    const updatedCategory = await Category.findByIdAndUpdate(
+      id,
+      updatedFields,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedCategory) {
+      return res.status(404).json({
+        status: 404,
+        message: `Category with id '${id}' not found`,
+      });
+    }
+
+    return res.status(200).json({
+      status: 200,
+      message: "Category updated successfully",
+      payload: updatedCategory,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: "Failed to update category",
+      error: error.message,
+    });
+  }
+};
+
+export { addCategory, getCategories, deleteCategory, updateCategory };

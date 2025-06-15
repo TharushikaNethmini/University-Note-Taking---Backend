@@ -3,6 +3,7 @@ import {
   addCategory,
   deleteCategory,
   getCategories,
+  updateCategory,
 } from "../controllers/categories.js";
 import { adminMiddleware, requireSignin } from "../middlewares/index.js";
 
@@ -16,5 +17,6 @@ router.delete(
   adminMiddleware,
   deleteCategory
 );
+router.put("/categories/:id", requireSignin, adminMiddleware, updateCategory);
 
 export default router;
