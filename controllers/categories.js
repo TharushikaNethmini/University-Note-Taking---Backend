@@ -1,11 +1,9 @@
 import Category from "../models/categories.js";
 
-// Add a new category
 const addCategory = async (req, res) => {
   try {
     const { categoryCode, name, description } = req.body;
 
-    // Check for required fields
     if (!categoryCode || !name) {
       return res.status(400).json({
         status: 400,
@@ -13,7 +11,6 @@ const addCategory = async (req, res) => {
       });
     }
 
-    // Check for existing categoryCode or name
     const existingCategory = await Category.findOne({
       $or: [{ categoryCode }, { name }],
     });
@@ -76,4 +73,42 @@ const getCategories = async (req, res) => {
   }
 };
 
-export { addCategory, getCategories };
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (id) {
+      const deletedCategory = await Category.findByIdAndDelete(id);
+
+      if (!deletedCategory) {
+        return res.status(404).json({
+          status: 404,
+          message: `Category with id '${id}' not found`,
+        });
+      }
+
+      return res.status(200).json({
+        status: 200,
+        message: `Category with id '${id}' deleted successfully`,
+        payload: deletedCategory,
+      });
+    } else {
+      const result = await Category.deleteMany({});
+      return res.status(200).json({
+        status: 200,
+        message: "All categories deleted successfully",
+        payload: {
+          deletedCount: result.deletedCount,
+        },
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: "Failed to delete category(ies)",
+      error: error.message,
+    });
+  }
+};
+
+export { addCategory, getCategories, deleteCategory };
