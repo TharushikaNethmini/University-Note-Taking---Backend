@@ -47,22 +47,33 @@ const addCategory = async (req, res) => {
   }
 };
 
-// Get all categories
-// export const getAllCategories = async (req, res) => {
-//   try {
-//     const categories = await Category.find();
+const getCategories = async (req, res) => {
+  try {
+    const { categoryCode, name } = req.query;
 
-//     return res.status(200).json({
-//       status: 200,
-//       payload: categories,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       status: 500,
-//       message: "Failed to fetch categories",
-//       error: error.message,
-//     });
-//   }
-// };
+    let filter = {};
 
-export { addCategory };
+    if (categoryCode) {
+      filter.categoryCode = categoryCode;
+    }
+
+    if (name) {
+      filter.name = name;
+    }
+
+    const categories = await Category.find(filter);
+
+    return res.status(200).json({
+      status: 200,
+      payload: categories,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: "Failed to fetch categories",
+      error: error.message,
+    });
+  }
+};
+
+export { addCategory, getCategories };
