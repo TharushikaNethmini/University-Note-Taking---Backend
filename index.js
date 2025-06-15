@@ -7,6 +7,7 @@ import authRouter from "./routes/auth.js";
 import usersRouter from "./routes/users.js";
 import notesRouter from "./routes/notes.js";
 import categoryRouter from "./routes/categories.js";
+import tagsRouter from "./routes/tags.js";
 
 dotenv.config();
 connectDB();
@@ -22,6 +23,7 @@ app.use("/api", authRouter);
 app.use("/api", usersRouter);
 app.use("/api", notesRouter);
 app.use("/api", categoryRouter);
+app.use("/api", tagsRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello from Express with sdsdsssss!");
