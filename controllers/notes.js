@@ -1,8 +1,12 @@
 import Note from "../models/notes.js";
+import Category from "../models/categories.js";
+import Tag from "../models/tags.js";
+
+import mongoose from "mongoose";
 
 const createNote = async (req, res) => {
   try {
-    const { title, content, categoryId } = req.body;
+    const { title, content, categoryId, tagId } = req.body;
     const { userId } = req.params;
 
     if (!title || !content) {
@@ -19,11 +23,49 @@ const createNote = async (req, res) => {
       });
     }
 
+    if (!tagId) {
+      return res.status(400).json({
+        status: "error",
+        payload: { message: "tagId is required" },
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      return res.status(400).json({
+        status: "error",
+        payload: { message: "Invalid categoryId format" },
+      });
+    }
+
+    const categoryExists = await Category.findById(categoryId);
+    if (!categoryExists) {
+      return res.status(404).json({
+        status: "error",
+        payload: { message: "Category not found" },
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(tagId)) {
+      return res.status(400).json({
+        status: "error",
+        payload: { message: "Invalid tagId format" },
+      });
+    }
+
+    const tagExists = await Tag.findById(tagId);
+    if (!tagExists) {
+      return res.status(404).json({
+        status: "error",
+        payload: { message: "Tag not found" },
+      });
+    }
+
     const newNote = new Note({
       title,
       content,
       user: userId,
       categoryId,
+      tagId,
     });
 
     const savedNote = await newNote.save();
@@ -36,7 +78,7 @@ const createNote = async (req, res) => {
     console.error(error);
     res.status(500).json({
       status: "error",
-      payload: { message: "Server error" },
+      payload: { message: "Internal Server Error", error: error.message },
     });
   }
 };
@@ -54,6 +96,7 @@ const getNotes = async (req, res) => {
 
     const notes = await Note.find(filter)
       .populate("categoryId")
+      .populate("tagId")
       .populate("user", "username email")
       .sort({ createdAt: -1 });
 

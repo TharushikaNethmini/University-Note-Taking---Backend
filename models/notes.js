@@ -21,6 +21,10 @@ const noteSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
     },
+    tagId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tag",
+    },
   },
   { timestamps: true }
 );
