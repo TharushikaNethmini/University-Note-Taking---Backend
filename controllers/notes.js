@@ -87,22 +87,58 @@ const getNotes = async (req, res) => {
   try {
     const filter = {};
 
+    if (req.query.id) {
+      if (!req.query.id.match(/^[0-9a-fA-F]{24}$/)) {
+        return res
+          .status(400)
+          .json({ status: 400, message: "Invalid note id format" });
+      }
+      filter._id = req.query.id;
+    }
+
     if (req.query.user) {
       filter.user = req.query.user;
     }
+
     if (req.query.categoryId) {
       filter.categoryId = req.query.categoryId;
     }
+
+    if (req.query.tagId) {
+      filter.tagId = req.query.tagId;
+    }
+
+    if (req.query.title) {
+      filter.title = { $regex: req.query.title, $options: "i" };
+    }
+
+    if (req.query.description) {
+      filter.description = { $regex: req.query.description, $options: "i" };
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const size = parseInt(req.query.size) || 10;
+
+    const totalNotes = await Note.countDocuments(filter);
+
+    const totalPages = Math.ceil(totalNotes / size);
 
     const notes = await Note.find(filter)
       .populate("categoryId")
       .populate("tagId")
       .populate("user", "username email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * size)
+      .limit(size);
 
     return res.status(200).json({
       status: 200,
-      payload: notes,
+      payload: {
+        totalNotes,
+        currentPage: page,
+        totalPages,
+        notes,
+      },
     });
   } catch (error) {
     console.error(error);
@@ -114,4 +150,55 @@ const getNotes = async (req, res) => {
   }
 };
 
-export { createNote, getNotes };
+const deleteNoteById = async (req, res) => {
+  try {
+    const { noteId } = req.params;
+
+    if (!noteId || !mongoose.Types.ObjectId.isValid(noteId)) {
+      return res.status(400).json({
+        status: "error",
+        payload: { message: "Invalid or missing noteId" },
+      });
+    }
+
+    const note = await Note.findById(noteId);
+    if (!note) {
+      return res.status(404).json({
+        status: "error",
+        payload: { message: "Note not found" },
+      });
+    }
+
+    await Note.findByIdAndDelete(noteId);
+
+    res.status(200).json({
+      status: "success",
+      payload: { message: "Note deleted successfully" },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "error",
+      payload: { message: "Internal server error" },
+    });
+  }
+};
+
+const deleteAllNotes = async (req, res) => {
+  try {
+    await Note.deleteMany({});
+
+    res.status(200).json({
+      status: "success",
+      payload: { message: "All notes deleted successfully" },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "error",
+      payload: { message: "Internal server error" },
+    });
+  }
+};
+
+export { createNote, getNotes, deleteNoteById, deleteAllNotes };
