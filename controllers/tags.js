@@ -81,4 +81,77 @@ const getTags = async (req, res) => {
   }
 };
 
-export { addTag, getTags };
+const updateTag = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { tagCode, name, colorCode } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        status: 400,
+        message: "Tag ID is required in the URL",
+      });
+    }
+
+    if (tagCode) {
+      const existingTagByCode = await Tag.findOne({ tagCode });
+      if (existingTagByCode && existingTagByCode._id.toString() !== id) {
+        return res.status(400).json({
+          status: 400,
+          message: "Tag with the same tagCode already exists",
+        });
+      }
+    }
+
+    if (name) {
+      const existingTagByName = await Tag.findOne({ name });
+      if (existingTagByName && existingTagByName._id.toString() !== id) {
+        return res.status(400).json({
+          status: 400,
+          message: "Tag with the same name already exists",
+        });
+      }
+    }
+
+    if (colorCode) {
+      const existingTagByColorCode = await Tag.findOne({ colorCode });
+      if (
+        existingTagByColorCode &&
+        existingTagByColorCode._id.toString() !== id
+      ) {
+        return res.status(400).json({
+          status: 400,
+          message: "Tag with the same colorCode already exists",
+        });
+      }
+    }
+
+    const updatedTag = await Tag.findByIdAndUpdate(
+      id,
+      { tagCode, name, colorCode },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedTag) {
+      return res.status(404).json({
+        status: 404,
+        message: "Tag not found",
+      });
+    }
+
+    res.status(200).json({
+      status: 200,
+      message: "Tag updated successfully",
+      payload: updatedTag,
+    });
+  } catch (error) {
+    console.error("Error updating tag:", error);
+    res.status(500).json({
+      status: 500,
+      message: "Server error while updating tag",
+      error: error.message,
+    });
+  }
+};
+
+export { addTag, getTags, updateTag };
