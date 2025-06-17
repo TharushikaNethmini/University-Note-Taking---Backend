@@ -1,6 +1,7 @@
 import Note from "../models/notes.js";
 import Category from "../models/categories.js";
 import Tag from "../models/tags.js";
+import User from "../models/user.js";
 
 import mongoose from "mongoose";
 
@@ -201,4 +202,93 @@ const deleteAllNotes = async (req, res) => {
   }
 };
 
-export { createNote, getNotes, deleteNoteById, deleteAllNotes };
+const updateNote = async (req, res) => {
+  try {
+    const { noteId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(noteId)) {
+      return res.status(400).json({ status: 400, message: "Invalid note ID" });
+    }
+
+    const existingNote = await Note.findById(noteId);
+    if (!existingNote) {
+      return res.status(404).json({ status: 404, message: "Note not found" });
+    }
+
+    const { title, description, categoryId, tagId, user } = req.body;
+
+    if (title !== undefined && typeof title !== "string") {
+      return res
+        .status(400)
+        .json({ status: 400, message: "Title must be a string" });
+    }
+
+    if (description !== undefined && typeof description !== "string") {
+      return res
+        .status(400)
+        .json({ status: 400, message: "Description must be a string" });
+    }
+
+    if (categoryId !== undefined) {
+      if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+        return res
+          .status(400)
+          .json({ status: 400, message: "Invalid categoryId" });
+      }
+      const categoryExists = await Category.findById(categoryId);
+      if (!categoryExists) {
+        return res
+          .status(404)
+          .json({ status: 404, message: "Category not found" });
+      }
+    }
+
+    if (tagId !== undefined) {
+      if (!mongoose.Types.ObjectId.isValid(tagId)) {
+        return res.status(400).json({ status: 400, message: "Invalid tagId" });
+      }
+      const tagExists = await Tag.findById(tagId);
+      if (!tagExists) {
+        return res.status(404).json({ status: 404, message: "Tag not found" });
+      }
+    }
+
+    if (user !== undefined) {
+      if (!mongoose.Types.ObjectId.isValid(user)) {
+        return res
+          .status(400)
+          .json({ status: 400, message: "Invalid user ID" });
+      }
+      const userExists = await User.findById(user);
+      if (!userExists) {
+        return res.status(404).json({ status: 404, message: "User not found" });
+      }
+    }
+
+    const updatedFields = {};
+    if (title !== undefined) updatedFields.title = title;
+    if (description !== undefined) updatedFields.description = description;
+    if (categoryId !== undefined) updatedFields.categoryId = categoryId;
+    if (tagId !== undefined) updatedFields.tagId = tagId;
+    if (user !== undefined) updatedFields.user = user;
+
+    const updatedNote = await Note.findByIdAndUpdate(noteId, updatedFields, {
+      new: true,
+    });
+
+    return res.status(200).json({
+      status: 200,
+      message: "Note updated successfully",
+      payload: updatedNote,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: 500,
+      message: "Failed to update note",
+      error: error.message,
+    });
+  }
+};
+
+export { createNote, getNotes, deleteNoteById, deleteAllNotes, updateNote };
