@@ -154,4 +154,41 @@ const updateTag = async (req, res) => {
   }
 };
 
-export { addTag, getTags, updateTag };
+const deleteTag = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (id) {
+      const deletedTag = await Tag.findByIdAndDelete(id);
+
+      if (!deletedTag) {
+        return res.status(404).json({
+          status: 404,
+          message: "Tag not found",
+        });
+      }
+
+      return res.status(200).json({
+        status: 200,
+        message: "Tag deleted successfully",
+        payload: deletedTag,
+      });
+    } else {
+      const result = await Tag.deleteMany({});
+      return res.status(200).json({
+        status: 200,
+        message: "All tags deleted successfully",
+        payload: result,
+      });
+    }
+  } catch (error) {
+    console.error("Error deleting tag:", error);
+    res.status(500).json({
+      status: 500,
+      message: "Server error while deleting tag",
+      error: error.message,
+    });
+  }
+};
+
+export { addTag, getTags, updateTag, deleteTag };
